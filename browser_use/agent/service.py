@@ -813,7 +813,7 @@ class Agent(Generic[Context]):
 
 			# generate procedural memory if needed
 			if self.enable_memory and self.memory and self.state.n_steps % self.memory.config.memory_interval == 0:
-				self.memory.create_procedural_memory(self.state.n_steps)
+				await self.memory.create_procedural_memory(self.state.n_steps)
 
 			await self._raise_if_stopped_or_paused()
 

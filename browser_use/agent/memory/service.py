@@ -15,8 +15,7 @@ from langchain_core.messages.utils import convert_to_openai_messages
 from browser_use.agent.memory.views import MemoryConfig
 from browser_use.agent.message_manager.service import MessageManager
 from browser_use.agent.message_manager.views import ManagedMessage, MessageMetadata
-from browser_use.utils import time_execution_sync
-
+from browser_use.utils import time_execution_async
 
 class Memory:
 	"""
@@ -67,7 +66,7 @@ class Memory:
 			# also disable mem0's telemetry when ANONYMIZED_TELEMETRY=False
 			if os.getenv('ANONYMIZED_TELEMETRY', 'true').lower()[0] in 'fn0':
 				os.environ['MEM0_TELEMETRY'] = 'False'
-			from mem0 import Memory as Mem0Memory
+			from mem0 import AsyncMemory as Mem0Memory
 		except ImportError:
 			raise ImportError('mem0 is required when enable_memory=True. Please install it with `pip install mem0`.')
 
@@ -84,7 +83,7 @@ class Memory:
 		with warnings.catch_warnings():
 			warnings.filterwarnings('ignore', category=DeprecationWarning)
 			try:
-				self.mem0 = Mem0Memory.from_config(config_dict=self.config.full_config_dict)
+				self.mem0 = Mem0Memory.from_config(self.config.full_config_dict)
 			except Exception as e:
 				if 'history_old' in str(e) and 'sqlite3.OperationalError' in str(type(e)):
 					# Handle the migration error by using a unique history database path
@@ -104,13 +103,13 @@ class Memory:
 					config_with_history_path['history_db_path'] = history_db_path
 
 					# Try again with the new config
-					self.mem0 = Mem0Memory.from_config(config_dict=config_with_history_path)
+					self.mem0 = Mem0Memory.from_config(config_with_history_path)
 				else:
 					# Re-raise if it's a different error
 					raise
 
-	@time_execution_sync('--create_procedural_memory')
-	def create_procedural_memory(self, current_step: int) -> None:
+	@time_execution_async('--create_procedural_memory')
+	async def create_procedural_memory(self, current_step: int) -> None:
 		"""
 		Create a procedural memory if needed based on the current step.
 
@@ -140,9 +139,10 @@ class Memory:
 			return
 		# Create a procedural memory with timeout
 		try:
-			with ThreadPoolExecutor(max_workers=1) as executor:
-				future = executor.submit(self._create, [m.message for m in messages_to_process], current_step)
-				memory_content = future.result(timeout=5)
+			# with ThreadPoolExecutor(max_workers=1) as executor:
+			# 	future = executor.submit(self._create, [m.message for m in messages_to_process], current_step)
+			# 	memory_content = future.result(timeout=5)
+			memory_content = await self._create([m.message for m in messages_to_process], current_step)
 		except TimeoutError:
 			self.logger.warning('📜 Procedural memory creation timed out after 30 seconds')
 			return
@@ -171,10 +171,10 @@ class Memory:
 		self.message_manager.state.history.current_tokens += memory_tokens
 		self.logger.info(f'📜 History consolidated: {len(messages_to_process)} steps converted to long-term memory')
 
-	def _create(self, messages: list[BaseMessage], current_step: int) -> str | None:
+	async def _create(self, messages: list[BaseMessage], current_step: int) -> str | None:
 		parsed_messages = convert_to_openai_messages(messages)
 		try:
-			results = self.mem0.add(
+			results = await self.mem0.add(
 				messages=parsed_messages,
 				agent_id=self.config.agent_id,
 				memory_type='procedural_memory',
