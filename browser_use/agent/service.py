@@ -600,9 +600,9 @@ class Agent(Generic[Context]):
 		# Order of preference for tool calling methods
 		methods_to_try = [
 			'function_calling',  # Most capable and efficient
-			'tools',  # Works with some models that don't support function_calling
-			'json_mode',  # More basic structured output
-			'raw',  # Fallback - no tool calling support
+			# 'tools',  # Works with some models that don't support function_calling
+			# 'json_mode',  # More basic structured output
+			# 'raw',  # Fallback - no tool calling support
 		]
 
 		# Try parallel testing for faster detection
@@ -774,7 +774,8 @@ class Agent(Generic[Context]):
 			)
 
 		# Auto-detect the best method
-		return self._detect_best_tool_calling_method()
+		# TODO(girfan): Revert?
+		return "function_calling"
 
 	def add_new_task(self, new_task: str) -> None:
 		"""Add a new task to the agent, keeping the same task_id as tasks are continuous"""

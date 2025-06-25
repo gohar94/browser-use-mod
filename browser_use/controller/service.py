@@ -27,6 +27,7 @@ from browser_use.controller.views import (
 	Position,
 	ScrollAction,
 	SearchGoogleAction,
+	SearchBingAction,
 	SendKeysAction,
 	SwitchTabAction,
 )
@@ -77,22 +78,41 @@ class Controller(Generic[Context]):
 			async def done(params: DoneAction):
 				return ActionResult(is_done=True, success=params.success, extracted_content=params.text)
 
+		# # Basic Navigation Actions
+		# @self.registry.action(
+		# 	'Search the query in Google, the query should be a search query like humans search in Google, concrete and not vague or super long.',
+		# 	param_model=SearchGoogleAction,
+		# )
+		# async def search_google(params: SearchGoogleAction, browser_session: BrowserSession):
+		# 	search_url = f'https://www.google.com/search?q={params.query}&udm=14'
+
+		# 	page = await browser_session.get_current_page()
+		# 	if page.url.strip('/') == 'https://www.google.com':
+		# 		await page.goto(search_url)
+		# 		await page.wait_for_load_state()
+		# 	else:
+		# 		page = await browser_session.create_new_tab(search_url)
+
+		# 	msg = f'🔍  Searched for "{params.query}" in Google'
+		# 	logger.info(msg)
+		# 	return ActionResult(extracted_content=msg, include_in_memory=True)
+
 		# Basic Navigation Actions
 		@self.registry.action(
-			'Search the query in Google, the query should be a search query like humans search in Google, concrete and not vague or super long.',
-			param_model=SearchGoogleAction,
+			'Search the query in Bing, the query should be a search query like humans search in Bing, concrete and not vague or super long.',
+			param_model=SearchBingAction,
 		)
-		async def search_google(params: SearchGoogleAction, browser_session: BrowserSession):
-			search_url = f'https://www.google.com/search?q={params.query}&udm=14'
+		async def search_bing(params: SearchBingAction, browser_session: BrowserSession):
+			search_url = f'https://www.bing.com/search?q={params.query}'
 
 			page = await browser_session.get_current_page()
-			if page.url.strip('/') == 'https://www.google.com':
+			if page.url.strip('/') == 'https://www.bing.com':
 				await page.goto(search_url)
 				await page.wait_for_load_state()
 			else:
 				page = await browser_session.create_new_tab(search_url)
 
-			msg = f'🔍  Searched for "{params.query}" in Google'
+			msg = f'🔍  Searched for "{params.query}" in Bing'
 			logger.info(msg)
 			return ActionResult(extracted_content=msg, include_in_memory=True)
 
