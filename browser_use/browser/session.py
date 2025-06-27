@@ -2461,6 +2461,11 @@ class BrowserSession(BaseModel):
 
 			screenshot_b64 = base64.b64encode(screenshot).decode('utf-8')
 			return screenshot_b64
+		except Exception as e:
+			self.logger.error(
+				f'❌ Failed to take viewport screenshot: {type(e).__name__}: {e}'
+			)
+			# If this fails, we will just return the original viewport size screenshot
 
 		finally:
 			# 5. Restore original viewport state if we expanded it
