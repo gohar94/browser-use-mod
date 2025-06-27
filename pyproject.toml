@@ -39,6 +39,7 @@ dependencies = [
     "patchright>=1.52.5",
     "aiofiles>=24.1.0",
     "lmnr[all]>=0.6.10",
+    "googlesearch-python",
 ]
 # google-api-core: only used for Google LLM APIs
 # pyperclip: only used for examples that use copy/paste
