@@ -112,6 +112,8 @@ class Controller(Generic[Context]):
 			else:
 				page = await browser_session.create_new_tab(search_url)
 
+			await page.wait_for_timeout(500)
+
 			msg = f'🔍  Searched for "{params.query}" in Bing'
 			logger.info(msg)
 			return ActionResult(extracted_content=msg, include_in_memory=True)

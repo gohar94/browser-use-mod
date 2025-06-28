@@ -220,47 +220,43 @@ class MessageManager:
 			self._add_message_with_tokens(context_message, message_type='init')
 
 		task_message = HumanMessage(
-			content=f'Your ultimate task is: """{self.task}""". If you achieved your ultimate task, stop everything and use the done action in the next step to complete the task. If not, continue as usual.'
+			content=f'Your ultimate task is: """{self.task}""". If you achieved the answer to your ultimate task, STOP everything and use the done action in the next step to complete the task. If not, continue as usual.'
 		)
 		self._add_message_with_tokens(task_message, message_type='init')
 
-		placeholder_message = HumanMessage(content='Example output:')
+		placeholder_message = SystemMessage(content='Never use Google search. Use Bing Search instead if you need a search engine.')
 		self._add_message_with_tokens(placeholder_message, message_type='init')
 
-		example_tool_call = AIMessage(
-			content='',
-			tool_calls=[
-				{
-					'name': 'AgentOutput',
-					'args': {
-						'current_state': {
-							'evaluation_previous_goal': """
-							Success - I successfully clicked on the 'Apple' link from the Google Search results page, 
-							which directed me to the 'Apple' company homepage. This is a good start toward finding 
-							the best place to buy a new iPhone as the Apple website often list iPhones for sale.
-						""".strip(),
-							'memory': """
-							I searched for 'iPhone retailers' on Google. From the Google Search results page, 
-							I used the 'click_element_by_index' tool to click on element at index [45] labeled 'Best Buy' but calling 
-							the tool did not direct me to a new page. I then used the 'click_element_by_index' tool to click 
-							on element at index [82] labeled 'Apple' which redirected me to the 'Apple' company homepage. 
-							Currently at step 3/15.
-						""".strip(),
-							'next_goal': """
-							Looking at reported structure of the current page, I can see the item '[127]<h3 iPhone/>' 
-							in the content. I think this button will lead to more information and potentially prices 
-							for iPhones. I'll click on the link at index [127] using the 'click_element_by_index' 
-							tool and hope to see prices on the next page.
-						""".strip(),
-						},
-						'action': [{'click_element_by_index': {'index': 127}}],
-					},
-					'id': str(self.state.tool_id),
-					'type': 'tool_call',
-				},
-			],
-		)
-		self._add_message_with_tokens(example_tool_call, message_type='init')
+		# example_tool_call = AIMessage(
+		# 	content='',
+		# 	tool_calls=[
+		# 		{
+		# 			'name': 'AgentOutput',
+		# 			'args': {
+		# 				'current_state': {
+		# 					'evaluation_previous_goal': """
+		# 					Success - I successfully clicked on the Bing Search results page.
+		# 					This is a good start toward solving the task.
+		# 				""".strip(),
+		# 					'memory': """
+		# 					I searched for the given query on Bing. From the Bing Search results page, 
+		# 					I used the 'click_element_by_index' tool to click on element at index [45].
+		# 					Currently at step 3/15.
+		# 				""".strip(),
+		# 					'next_goal': """
+		# 					Looking at reported structure of the current page, I can see the item '[127]<h3 Text/>' 
+		# 					in the content. I think this button will lead to more information to solve the task.
+		# 					I'll click on the link at index [127] using the 'click_element_by_index'.
+		# 				""".strip(),
+		# 				},
+		# 				'action': [{'click_element_by_index': {'index': 127}}],
+		# 			},
+		# 			'id': str(self.state.tool_id),
+		# 			'type': 'tool_call',
+		# 		},
+		# 	],
+		# )
+		# self._add_message_with_tokens(example_tool_call, message_type='init')
 		self.add_tool_message(content='Browser started', message_type='init')
 
 		placeholder_message = HumanMessage(content='[Your task history memory starts here]')
